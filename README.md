@@ -94,7 +94,7 @@ More detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - **Python optimization service** — FastAPI/Pydantic service for route/load grouping
 - **TypeScript fallback optimizer** — graceful degradation if the Python service is unavailable
 - **23 domain regression tests** — state transitions, capacity boundaries, prioritization, duplicate prevention, fleet constraints, and input integrity
-- **CircleCI + GitHub Actions** — independent test/build quality gates
+- **CircleCI + GitHub Actions definitions** — independent test/build quality gates
 - **Docker Compose** — local Postgres, Redis, and Python optimizer services
 
 ## Technology
@@ -144,7 +144,7 @@ npm test
 npm run build
 ```
 
-The repository defines **23 domain test cases** across the delivery state machine and load optimizer. CI runs the test suite and builds both applications before changes are considered ready.
+The repository defines **23 domain test cases** across the delivery state machine and load optimizer. Both CI definitions run the test suite and build both applications as quality gates.
 
 ## Engineering decisions demonstrated
 
