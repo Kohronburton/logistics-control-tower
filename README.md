@@ -194,6 +194,15 @@ docs/                      architecture + recruiter demo walkthrough
 docker-compose.yml         local supporting services
 ```
 
+## Reviewer checklist
+
+- Run `npm test` and `npm run build`.
+- Inspect `apps/api/src/domain.ts` for load-capacity and state-machine logic.
+- Inspect `apps/api/src/server.ts` for scenario orchestration, fallback behavior, analytics, and SSE.
+- Inspect `services/optimizer/main.py` for the Python optimization boundary.
+- Use the Resilience Lab scenarios to see deterministic before/after behavior.
+- Read [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for explicit production tradeoffs.
+
 ## Author
 
 **Kohron Burton**  
