@@ -1,7 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import { z } from 'zod';
-import { canTransition, optimizeLoads, type Delivery, type DeliveryStatus, type Vehicle } from './domain.js';
+import { canTransition, optimizeLoads, type Delivery, type DeliveryStatus, type Load, type Vehicle } from './domain.js';
 
 const app = express();
 app.use(cors());
@@ -29,7 +29,7 @@ const vehicles: Vehicle[] = [
   { id: 'SUV-03', label: 'SUV 03', maxWeightLbs: 120, maxCubicFt: 16 }
 ];
 
-let loads = optimizeLoads(deliveries, vehicles);
+let loads: Load[] = optimizeLoads(deliveries, vehicles);
 const events = [
   { at: new Date().toISOString(), type: 'system.ready', entity: 'CONTROL-TOWER' },
   { at: new Date(Date.now() - 18000).toISOString(), type: 'delivery.sorted', entity: 'RD-1042' },
@@ -44,10 +44,34 @@ app.get('/api/deliveries', (_req, res) => res.json(deliveries));
 app.get('/api/loads', (_req, res) => res.json(loads));
 app.get('/api/events', (_req, res) => res.json(events));
 
-app.post('/api/optimize', (_req, res) => {
-  loads = optimizeLoads(deliveries, vehicles);
-  events.unshift({ at: new Date().toISOString(), type: 'optimizer.completed', entity: `${loads.length}-loads` });
-  res.json({ loads, unassigned: deliveries.filter((d) => d.status === 'SORTED').length - loads.reduce((n, l) => n + l.deliveries.length, 0) });
+app.post('/api/optimize', async (_req, res) => {
+  const optimizerUrl = process.env.OPTIMIZER_URL ?? 'http://localhost:8001';
+  let engine = 'typescript-fallback';
+
+  try {
+    const response = await fetch(`${optimizerUrl}/optimize`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ deliveries, vehicles })
+    });
+    if (!response.ok) throw new Error(`Optimizer returned ${response.status}`);
+
+    const payload = await response.json() as { loads: Array<Omit<Load, 'deliveries'> & { deliveryIds: string[] }> };
+    loads = payload.loads.map((load) => ({
+      ...load,
+      deliveries: load.deliveryIds
+        .map((id) => deliveries.find((delivery) => delivery.id === id))
+        .filter((delivery): delivery is Delivery => Boolean(delivery))
+    }));
+    engine = 'python-fastapi';
+  } catch {
+    loads = optimizeLoads(deliveries, vehicles);
+  }
+
+  const assigned = loads.reduce((n, load) => n + load.deliveries.length, 0);
+  const unassigned = deliveries.filter((d) => d.status === 'SORTED').length - assigned;
+  events.unshift({ at: new Date().toISOString(), type: 'optimizer.completed', entity: `${engine}:${loads.length}-loads` });
+  res.json({ loads, unassigned, engine });
 });
 
 const transitionSchema = z.object({ status: z.enum(['ARRIVED', 'SORTED', 'ASSIGNED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'EXCEPTION']) });
