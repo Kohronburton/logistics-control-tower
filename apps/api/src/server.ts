@@ -1,5 +1,5 @@
 import cors from 'cors';
-import express from 'express';
+import express, { type Response } from 'express';
 import { z } from 'zod';
 import { canTransition, optimizeLoads, type Delivery, type DeliveryStatus, type Load, type Vehicle } from './domain.js';
 
@@ -56,7 +56,7 @@ const events: OpsEvent[] = [
   { at: new Date(Date.now() - 31000).toISOString(), type: 'delivery.arrived', entity: 'RD-1045', severity: 'info' }
 ];
 
-const sseClients = new Set<express.Response>();
+const sseClients = new Set<Response>();
 
 function publish(type: string, entity: string, severity: Severity = 'info', message?: string) {
   const event: OpsEvent = { at: new Date().toISOString(), type, entity, severity, message };
@@ -197,8 +197,12 @@ app.post('/api/scenarios/:scenario', async (req, res) => {
     return res.json(state());
   }
 
+  // Every incident starts from the same baseline so the demo is repeatable and comparisons stay meaningful.
+  deliveries = seedDeliveries();
+  activeVehicles = [...baseVehicles];
+  activeScenario = null;
+
   if (scenario === 'priority-surge') {
-    deliveries = deliveries.filter((delivery) => delivery.id !== 'RD-1099');
     deliveries.unshift({
       id: 'RD-1099', customer: 'Critical Medical', address: 'Miami Beach, FL', lat: 25.8127, lng: -80.1341,
       weightLbs: 14, cubicFt: 1.8, priority: 1, promisedBy: promised(1.1), status: 'SORTED'
