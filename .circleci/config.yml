@@ -1,0 +1,30 @@
+version: 2.1
+
+jobs:
+  test-and-build:
+    docker:
+      - image: cimg/node:22.11
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - npm-v1-{{ checksum "package.json" }}
+            - npm-v1-
+      - run:
+          name: Install dependencies
+          command: npm install
+      - save_cache:
+          key: npm-v1-{{ checksum "package.json" }}
+          paths:
+            - ~/.npm
+      - run:
+          name: Run automated tests
+          command: npm test
+      - run:
+          name: Build applications
+          command: npm run build
+
+workflows:
+  engineering-quality:
+    jobs:
+      - test-and-build
