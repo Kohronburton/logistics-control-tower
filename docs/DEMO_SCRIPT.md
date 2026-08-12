@@ -52,7 +52,7 @@ Then briefly mention the other two scenarios:
 
 Scroll to **System Health**.
 
-> "The frontend is React/TypeScript. The API is Node/TypeScript with explicit delivery-state rules. Optimization is behind a service boundary: it prefers a Python/FastAPI service and falls back to TypeScript if that dependency is unavailable. I also included 23 domain regression tests plus CircleCI and GitHub Actions quality gates."
+> "The frontend is React/TypeScript. The API is Node/TypeScript with explicit delivery-state rules. Optimization is behind a service boundary: it prefers a Python/FastAPI service and falls back to TypeScript if that dependency is unavailable. I also included 23 domain regression tests plus CircleCI and GitHub Actions quality-gate definitions."
 
 Close with:
 
