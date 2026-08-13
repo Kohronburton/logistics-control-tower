@@ -1,0 +1,28 @@
+name: engineering-quality
+
+on:
+  pull_request:
+  push:
+    branches: [main, roadie-demo]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run automated domain tests
+        run: npm test
+
+      - name: Build API and web applications
+        run: npm run build
