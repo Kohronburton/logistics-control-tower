@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import cors from 'cors';
 import express, { type Response } from 'express';
 import { z } from 'zod';
@@ -246,7 +247,8 @@ app.post('/api/deliveries/:id/status', (req, res) => {
   res.json(delivery);
 });
 
-const webDist = path.resolve(process.cwd(), 'apps/web/dist');
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+const webDist = path.resolve(moduleDir, '../../web/dist');
 app.use(express.static(webDist));
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
