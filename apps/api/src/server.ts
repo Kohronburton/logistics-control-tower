@@ -1,3 +1,4 @@
+import path from 'node:path';
 import cors from 'cors';
 import express, { type Response } from 'express';
 import { z } from 'zod';
@@ -197,7 +198,6 @@ app.post('/api/scenarios/:scenario', async (req, res) => {
     return res.json(state());
   }
 
-  // Every incident starts from the same baseline so the demo is repeatable and comparisons stay meaningful.
   deliveries = seedDeliveries();
   activeVehicles = [...baseVehicles];
   activeScenario = null;
@@ -246,5 +246,12 @@ app.post('/api/deliveries/:id/status', (req, res) => {
   res.json(delivery);
 });
 
+const webDist = path.resolve(process.cwd(), 'apps/web/dist');
+app.use(express.static(webDist));
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  return res.sendFile(path.join(webDist, 'index.html'));
+});
+
 const port = Number(process.env.PORT ?? 4000);
-app.listen(port, () => console.log(`Logistics Control Tower API listening on http://localhost:${port}`));
+app.listen(port, () => console.log(`Logistics Control Tower listening on http://localhost:${port}`));
