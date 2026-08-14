@@ -4,6 +4,7 @@ import App from './App';
 import WowHero from './WowHero';
 import './styles.css';
 import './wow.css';
+import './decision.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
